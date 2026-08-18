@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import './ProductList.css'
 import CartItem from './CartItem';
 import { addItem } from './CartSlice';
@@ -9,6 +9,8 @@ function ProductList({ onHomeClick }) {
     const [showCart, setShowCart] = useState(false);
     const [addedToCart, setAddedToCart] = useState({});
     const dispatch = useDispatch();
+    const cartItems = useSelector(state => state.cart.items);
+    const cartQuantity = cartItems.reduce((total, item) => total + item.quantity, 0);
 
     const plantsArray = [
         {
@@ -281,7 +283,7 @@ function ProductList({ onHomeClick }) {
                 </div>
                 <div style={styleObjUl}>
                     <div> <a href="#" onClick={(e) => handlePlantsClick(e)} style={styleA}>Plants</a></div>
-                    <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}><h1 className='cart'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" id="mainIconPathAttribute"></path></svg></h1></a></div>
+                    <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}><h1 className='cart'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" id="mainIconPathAttribute"></path></svg><span className="cart_quantity_count">{cartQuantity}</span></h1></a></div>
                 </div>
             </div>
             {!showCart ? (
@@ -292,7 +294,11 @@ function ProductList({ onHomeClick }) {
                                 <h2 className="plant_heading">{plantCategory.category}</h2>
                             </div>
                             <div className="product-list">
-                                {plantCategory.plants.map((plant) => (
+                                {plantCategory.plants.map((plant) => {
+                                    const isAdded = addedToCart[plant.name]
+                                        && cartItems.some(item => item.name === plant.name);
+
+                                    return (
                                     <div className="product-card" key={`${plantCategory.category}-${plant.name}`}>
                                         <h3 className="product-title">{plant.name}</h3>
                                         <img
@@ -303,14 +309,15 @@ function ProductList({ onHomeClick }) {
                                         <p>{plant.description}</p>
                                         <p className="product-price">{plant.cost}</p>
                                         <button
-                                            className={`product-button ${addedToCart[plant.name] ? 'added-to-cart' : ''}`}
+                                            className={`product-button ${isAdded ? 'added-to-cart' : ''}`}
                                             onClick={() => handleAddToCart(plant)}
-                                            disabled={addedToCart[plant.name]}
+                                            disabled={isAdded}
                                         >
-                                            {addedToCart[plant.name] ? 'Added to Cart' : 'Add to Cart'}
+                                            {isAdded ? 'Added to Cart' : 'Add to Cart'}
                                         </button>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </section>
                     ))}
